@@ -52,7 +52,7 @@ class TeacherEmail extends \common\models\ARBase
             'create_time' => 'Create Time',
             'create_by' => 'Create By',
             'type' => 'Type',
-            'school_name' => 'School Name',
+            'school_name' => '学校名称',
             'source' => 'Source',
         ];
     }
