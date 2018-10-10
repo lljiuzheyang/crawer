@@ -28,7 +28,8 @@ class TeacherEmailBusiness
     #endregion
 
     #region 正则邮箱校验规则
-    private $PREG ="/([a-z0-9\-_\.]+@[a-z0-9]+\.[a-z0-9\-_\.]+)+/i";
+    private $PREG = "/([a-z0-9\-_\.]+@[a-z0-9]+\.[a-z0-9\-_\.]+)+/i";
+
     #endregion
 
     public function __construct(TeacherEmailService $teacherEmailService)
@@ -63,7 +64,7 @@ class TeacherEmailBusiness
             $name = $pub->myTrim($v->plaintext);
             if (!empty($name)) {
                 $href = $v->href;
-                if (!empty($href)){
+                if (!empty($href)) {
                     $teacher_name[] = $name;
                     $source[] = $href;
                 }
@@ -74,28 +75,28 @@ class TeacherEmailBusiness
         #endregion
 
         #region 获取邮箱地址
-        for ($i=0;$i<count($source);$i++){
+        for ($i = 0; $i < count($source); $i++) {
             $email = [];
             $html->clear();
             $html->load_file($source[$i]);
 
-            foreach ($html->find(".wp_articlecontent") as $e){
+            foreach ($html->find(".wp_articlecontent") as $e) {
                 $str = $e->plaintext;
-                if (preg_match($this->PREG, $str , $matches)) {
+                if (preg_match($this->PREG, $str, $matches)) {
                     $email[] = $matches[0];
                 }
             }
 
-            if (!empty($email) && count($email)>0){
-                foreach ($email as $em){
+            if (!empty($email) && count($email) > 0) {
+                foreach ($email as $em) {
                     $json[] = [
-                        'teacher_name'=> $teacher_name[$i],
-                        'source'      => $source[$i],
-                        'email'       => $em,
-                        'create_time' =>date('Y-m-d h:i:s',time()),
-                        'create_by'   =>'ALpython',
-                        'type'        =>'教授',
-                        'school_name' =>'天津工业大学纺织学院',
+                        'teacher_name' => $teacher_name[$i],
+                        'source' => $source[$i],
+                        'email' => $em,
+                        'create_time' => date('Y-m-d h:i:s', time()),
+                        'create_by' => 'ALpython',
+                        'type' => '教授',
+                        'school_name' => '天津工业大学纺织学院',
                     ];
                 }
             }
@@ -112,7 +113,8 @@ class TeacherEmailBusiness
      * @author      刘富胜 2018-10-09
      * @return int 返回类型
      */
-    public function getTeacherMail_daoshieol(){
+    public function getTeacherMail_daoshieol()
+    {
         $pack = '/home/getTutor';
         $special_id = 0;
         $recommend = 1;
@@ -144,20 +146,20 @@ class TeacherEmailBusiness
         // 3711-3911 1260
         // 3911-4111 1230
         // 4111-4290 1112
-        for ($page=4111;$page<4290;$page++){
-            $url = $this->Daoshieol.$pack.'?special_id='.$special_id.'&page='.$page.'&recommend='
-                .$recommend;
+        for ($page = 4111; $page < 4290; $page++) {
+            $url = $this->Daoshieol . $pack . '?special_id=' . $special_id . '&page=' . $page . '&recommend='
+                . $recommend;
             $content = public_utf::get($url);
             $arr = json_decode($content);
-            foreach ($arr->data as $data){
+            foreach ($arr->data as $data) {
                 $json[] = [
-                    'teacher_name'=> $data->name,
-                    'source'      => $url,
-                    'email'       => $data->email,
-                    'create_time' =>date('Y-m-d h:i:s',time()),
-                    'create_by'   =>'ALpython',
-                    'type'        =>$data->title,
-                    'school_name' =>$data->school,
+                    'teacher_name' => $data->name,
+                    'source' => $url,
+                    'email' => $data->email,
+                    'create_time' => date('Y-m-d h:i:s', time()),
+                    'create_by' => 'ALpython',
+                    'type' => $data->title,
+                    'school_name' => $data->school,
                 ];
             }
         }
@@ -172,15 +174,61 @@ class TeacherEmailBusiness
      * @author      刘富胜 2018-10-09
      * @return int 返回类型
      */
-    public function getTeacherMail_jgxyyzu(){
+    public function getTeacherMail_jgxyyzu()
+    {
+        // 保存了31
         ini_set('user_agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; GreenBrowser)');
 
+        $root_url = 'http://jgxy.yzu.edu.cn';
         #region 获取天津工业大学纺织学院的网页信息
         $html = new simple_html_dom();
         $html->load_file($this->Jgxyyzu);
         $pub = new public_utf();
         #endregion
 
+        $school_name = '扬州大学建筑科学与工程学院';
+        $teacher_name = [];//教师名称
+        $source = [];
+        $json = [];
+        #region 遍历所有教师及其所有教师对应的相应的详情界面链接
+        foreach ($html->find('#zoom td a') as $v) {
+            $teacher_name[] = $pub->getRegtext($v->plaintext);
+            $source[] = $root_url . $v->href;
+        }
+        #endregion
+
+        #region 通过链接获取教师的邮箱
+        for ($i = 0; $i < count($source); $i++) {
+            $content = [];
+            $html->clear();
+
+            $html->load_file($source[$i]);
+            $td_html = $html->find('#zoom td');
+            if (!empty($td_html)){
+                foreach ($td_html as $td) {
+                    $content[] = $pub->getRegtext($td->plaintext);
+                }
+                $type = $content[3];
+                $email = '';
+                if (preg_match($this->PREG, $content[10], $matches)) {
+                    $email = $matches[0];
+                }
+                if (!empty($email)) {
+                    $json[] = [
+                        'teacher_name' => $teacher_name[$i],
+                        'source' => $source[$i],
+                        'email' => $email,
+                        'create_time' => date('Y-m-d h:i:s', time()),
+                        'create_by' => 'ALpython',
+                        'type' => $type,
+                        'school_name' => $school_name,
+                    ];
+                }
+            }
+            unset($content);
+        }
+        #endregion
+        return $this->_teacherEmailService->batchSave($json);
 
     }
 
