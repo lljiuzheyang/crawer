@@ -115,11 +115,7 @@ class public_utf
 
         $res = curl_exec($curl);
         curl_close($curl);
-        /*
-        print "info";
-        print "<br>";
         return $res;
-        */
     }
 
 }

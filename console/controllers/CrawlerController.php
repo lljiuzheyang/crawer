@@ -76,4 +76,22 @@ class CrawlerController extends ControllerBase
         }
     }
 
+    /**
+     * 华南理工大学
+     *
+     * @author      刘富胜 2018-10-10
+     * @return string 返回类型
+     */
+    public function actionTeacherMail_yanzhaoscut()
+    {
+        try{
+            ignore_user_abort(true);
+            set_time_limit(0);//忽略页面执行超时
+            print_r($this->_teacherEmailBusiness->getTeacherMail_yanzhaoscut());
+        }catch (\Exception $e){
+            \Yii::info($e->getTraceAsString(), 'crawler');
+            var_dump($e->getMessage());
+        }
+    }
+
 }

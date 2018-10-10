@@ -25,6 +25,9 @@ class TeacherEmailBusiness
 
     //扬州大学建筑科学与工程学院
     private $Jgxyyzu = 'http://jgxy.yzu.edu.cn/col/col7675/index.html';
+
+    //华南理工大学
+    private $Yanzhaoscut = 'https://yanzhao.scut.edu.cn/open/TutorList.aspx';
     #endregion
 
     #region 正则邮箱校验规则
@@ -204,7 +207,7 @@ class TeacherEmailBusiness
 
             $html->load_file($source[$i]);
             $td_html = $html->find('#zoom td');
-            if (!empty($td_html)){
+            if (!empty($td_html)) {
                 foreach ($td_html as $td) {
                     $content[] = $pub->getRegtext($td->plaintext);
                 }
@@ -230,6 +233,124 @@ class TeacherEmailBusiness
         #endregion
         return $this->_teacherEmailService->batchSave($json);
 
+    }
+
+    /**
+     * 获取华南理工大学教师邮箱
+     *
+     * @author      刘富胜 2018-10-10
+     * @return int 返回类型
+     */
+    public function getTeacherMail_yanzhaoscut()
+    {
+        ini_set('user_agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; GreenBrowser)');
+        $content = public_utf::get($this->Yanzhaoscut);
+        $html = new simple_html_dom();
+        $html->load($content);
+
+        $source = [];
+        foreach ($html->find('#dgData a[target=_blank]') as $v){
+            $source[] = $v->href;
+        }
+        $page1_save = $this->saveAllYanzhaoscut($source);
+        $EVENTVALIDATION = $html->find('#__EVENTVALIDATION')[0]->value;
+        $VIEWSTATE = $html->find('#__VIEWSTATE')[0]->value;
+        $VIEWSTATEGENERATOR = $html->find('#__VIEWSTATEGENERATOR')[0]->value;
+        $VIEWSTATEENCRYPTED = $html->find('#__VIEWSTATEENCRYPTED')[0]->value;
+        $save_count = $this->recursionYanzhaoscut($EVENTVALIDATION,$VIEWSTATE,$VIEWSTATEENCRYPTED,$VIEWSTATEGENERATOR);
+        return $page1_save+$save_count;
+    }
+
+    /**
+     * 递归所有aspx的数据
+     *
+     * @author      刘富胜 2018-10-10
+     * @param string $EVENTVALIDATION
+     * @param string $VIEWSTATE
+     * @param string $VIEWSTATEENCRYPTED
+     * @param string $VIEWSTATEGENERATOR
+     * @param int $n
+     * @param int $save_count
+     * @return int 返回类型
+     */
+    private function recursionYanzhaoscut($EVENTVALIDATION,$VIEWSTATE,$VIEWSTATEENCRYPTED,$VIEWSTATEGENERATOR,$n=2,$save_count=0,$page_count=1){
+        if ($page_count<3){
+            if ($n < 12){
+                $page = $n;
+                if ($n == 11){
+                    $n = 1;
+                    $page = 'lnkNextPages';
+                    $page_count++;
+                }
+                $data = [
+                    '__EVENTVALIDATION'=>$EVENTVALIDATION,
+                    '__VIEWSTATE'=>$VIEWSTATE,
+                    'drpXslb'=>0,
+                    'ScriptManager1'=>'UpdatePanel2|dgData$ctl23$Pager1$lnkPage'.$page,
+                    '__VIEWSTATEENCRYPTED'=>$VIEWSTATEENCRYPTED,
+                    '__VIEWSTATEGENERATOR'=>$VIEWSTATEGENERATOR,
+                    '__EVENTTARGET'=>'dgData$ctl23$Pager1$lnkPage'.$page
+                ];
+                $content = public_utf::post($this->Yanzhaoscut,$data);
+                $html = new simple_html_dom();
+                $html->load($content);
+                $source = [];
+                foreach ($html->find('#dgData a[target=_blank]') as $v){
+                    $source[] = $v->href;
+                }
+                $save_count = $save_count +$this->saveAllYanzhaoscut($source);
+                $EVENTVALIDATION = $html->find('#__EVENTVALIDATION')[0]->value;
+                $VIEWSTATE = $html->find('#__VIEWSTATE')[0]->value;
+                $VIEWSTATEGENERATOR = $html->find('#__VIEWSTATEGENERATOR')[0]->value;
+                $VIEWSTATEENCRYPTED = $html->find('#__VIEWSTATEENCRYPTED')[0]->value;
+                $this->recursionYanzhaoscut($EVENTVALIDATION,$VIEWSTATE,$VIEWSTATEGENERATOR,$VIEWSTATEENCRYPTED,$n+1,$save_count,$page_count);
+            }
+        }
+
+        return $save_count;
+    }
+
+    /**
+     * 存取一页的aspx的数据
+     *
+     * @author      刘富胜 2018-10-10
+     * @param array $source
+     * @return int 返回类型
+     */
+    public function saveAllYanzhaoscut($source){
+        $html = new simple_html_dom();
+        $pub = new public_utf();
+        $json = [];
+        $root_url = 'https://yanzhao.scut.edu.cn/open/';
+        for ($i=0;$i<count($source);$i++){
+            $html->clear();
+            $arr = [];
+            try{
+                $html->load_file($root_url.$source[$i]);
+                foreach ($html->find('.tb_line') as $td){
+                    $arr[] = $pub->getRegtext($td->plaintext);
+                }
+                $teacher_name = $arr[1];
+                $type = $arr[17];
+                $email = $arr[23];
+                if (!empty($email)) {
+                    $json[] = [
+                        'teacher_name' => $teacher_name,
+                        'source' => $root_url.$source[$i],
+                        'email' => $email,
+                        'create_time' => date('Y-m-d h:i:s', time()),
+                        'create_by' => 'ALpython',
+                        'type' => $type,
+                        'school_name' => '华南理工大学',
+                    ];
+                }
+            }catch (\Exception $e){
+                continue;
+            }
+
+        }
+        $count = $this->_teacherEmailService->batchSave($json);
+        return $count;
     }
 
 
