@@ -276,7 +276,7 @@ class TeacherEmailBusiness
     private function recursionYanzhaoscut($EVENTVALIDATION,$VIEWSTATE,$VIEWSTATEENCRYPTED,$VIEWSTATEGENERATOR,$n=2,$save_count=0,$page_count=1){
         if ($page_count<3){
             if ($n < 12){
-                $page = $n;
+                $page = 'lnkPage'.$n;
                 if ($n == 11){
                     $n = 1;
                     $page = 'lnkNextPages';
@@ -286,10 +286,10 @@ class TeacherEmailBusiness
                     '__EVENTVALIDATION'=>$EVENTVALIDATION,
                     '__VIEWSTATE'=>$VIEWSTATE,
                     'drpXslb'=>0,
-                    'ScriptManager1'=>'UpdatePanel2|dgData$ctl23$Pager1$lnkPage'.$page,
+                    'ScriptManager1'=>'UpdatePanel2|dgData$ctl23$Pager1$'.$page,
                     '__VIEWSTATEENCRYPTED'=>$VIEWSTATEENCRYPTED,
                     '__VIEWSTATEGENERATOR'=>$VIEWSTATEGENERATOR,
-                    '__EVENTTARGET'=>'dgData$ctl23$Pager1$lnkPage'.$page
+                    '__EVENTTARGET'=>'dgData$ctl23$Pager1$'.$page
                 ];
                 $content = public_utf::post($this->Yanzhaoscut,$data);
                 $html = new simple_html_dom();
