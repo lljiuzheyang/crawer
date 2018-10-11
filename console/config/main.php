@@ -35,6 +35,13 @@ return [
                     'categories' => ['crawler'],
                     'logFile' => '@runtime/logs/crawler.log',
                 ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'levels' => ['error', 'warning', 'info'],
+                    'logVars' => ['*'],
+                    'categories' => ['test'],
+                    'logFile' => '@runtime/logs/test.log',
+                ],
             ],
         ],
     ],
