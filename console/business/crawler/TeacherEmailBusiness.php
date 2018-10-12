@@ -274,7 +274,7 @@ class TeacherEmailBusiness
      * @return int 返回类型
      */
     private function recursionYanzhaoscut($EVENTVALIDATION,$VIEWSTATE,$VIEWSTATEENCRYPTED,$VIEWSTATEGENERATOR,$n=2,$save_count=0,$page_count=1){
-        if ($page_count<3){
+        if ($page_count<21){
             if ($n < 12){
                 $page = 'lnkPage'.$n;
                 if ($n == 11){
@@ -286,24 +286,39 @@ class TeacherEmailBusiness
                     '__EVENTVALIDATION'=>$EVENTVALIDATION,
                     '__VIEWSTATE'=>$VIEWSTATE,
                     'drpXslb'=>0,
+                    'drpNd$drpNd'=>2019,
                     'ScriptManager1'=>'UpdatePanel2|dgData$ctl23$Pager1$'.$page,
+                    '__LASTFOCUS'=>'',
+                    '__EVENTARGUMENT'=>'',
                     '__VIEWSTATEENCRYPTED'=>$VIEWSTATEENCRYPTED,
                     '__VIEWSTATEGENERATOR'=>$VIEWSTATEGENERATOR,
-                    '__EVENTTARGET'=>'dgData$ctl23$Pager1$'.$page
+                    '__EVENTTARGET'=>'dgData$ctl23$Pager1$'.$page,
+                    '__ASYNCPOST'=>true
                 ];
-                $content = public_utf::post($this->Yanzhaoscut,$data);
+                $cookie = public_utf::get_cookie($this->Yanzhaoscut,$data,$this->Yanzhaoscut);
+                $header = [
+                    'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
+                    'cookie: ASP.NET_SessionId=qbfuq2pmezhz02cgt3lhheb0; ZS_ZY=ZS_ZY=; DropDownListNd=DropDownListNd=2019; ZS_ND=ZS_ND=2019; ZS_XSLB=ZS_XSLB=0; ZS_XSBH=ZS_XSBH=',
+                    'origin: https://yanzhao.scut.edu.cn',
+                    'referer: https://yanzhao.scut.edu.cn/open/TutorList.aspx'
+                    ];
+                $content = public_utf::post($this->Yanzhaoscut,http_build_query($data),$cookie,$header);
+
                 $html = new simple_html_dom();
+                $html->clear();
                 $html->load($content);
+                $EVENTVALIDATION = $html->find('#__EVENTVALIDATION')[0]->value;
+                $VIEWSTATE = $html->find('#__VIEWSTATE')[0]->value;
+                $VIEWSTATEGENERATOR = $html->find('#__VIEWSTATEGENERATOR')[0]->value;
+                $VIEWSTATEENCRYPTED = $html->find('#__VIEWSTATEENCRYPTED')[0]->value;
+                \Yii::info($content, 'test');
                 $source = [];
                 foreach ($html->find('#dgData a[target=_blank]') as $v){
                     $source[] = $v->href;
                 }
                 $save_count = $save_count +$this->saveAllYanzhaoscut($source);
-                $EVENTVALIDATION = $html->find('#__EVENTVALIDATION')[0]->value;
-                $VIEWSTATE = $html->find('#__VIEWSTATE')[0]->value;
-                $VIEWSTATEGENERATOR = $html->find('#__VIEWSTATEGENERATOR')[0]->value;
-                $VIEWSTATEENCRYPTED = $html->find('#__VIEWSTATEENCRYPTED')[0]->value;
-                $this->recursionYanzhaoscut($EVENTVALIDATION,$VIEWSTATE,$VIEWSTATEGENERATOR,$VIEWSTATEENCRYPTED,$n+1,$save_count,$page_count);
+
+                $this->recursionYanzhaoscut($EVENTVALIDATION,$VIEWSTATE,$VIEWSTATEENCRYPTED,$VIEWSTATEGENERATOR,$n+1,$save_count,$page_count);
             }
         }
 
