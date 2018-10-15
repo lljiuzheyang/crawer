@@ -112,4 +112,22 @@ class CrawlerController extends ControllerBase
         }
     }
 
+    /**
+     * 南京理工大学研究院
+     *
+     * @author      刘富胜 2018-10-15
+     * @return string 返回类型
+     */
+    public function actionTeacherMail_nanjing_technology()
+    {
+        try{
+            ignore_user_abort(true);
+            set_time_limit(0);//忽略页面执行超时
+            print_r($this->_teacherEmailBusiness->getTeacherMail_nanjing_technology());
+        }catch (\Exception $e){
+            \Yii::info($e->getTraceAsString(), 'crawler');
+            var_dump($e->getMessage());
+        }
+    }
+
 }
