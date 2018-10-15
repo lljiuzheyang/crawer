@@ -31,6 +31,11 @@ class TeacherEmailBusiness
 
     //扬州大学化学化工学院
     private $Hxhgyzu = 'http://hxhg.yzu.edu.cn/module/web/jpage/dataproxy.jsp?startrecord=1&endrecord=89&perpage=40';
+
+    //南京理工大学研究生院
+    //机械工程学院:yxsh=101等具体看http://gs.njust.edu.cn/dsjs/list.htm
+    private $NanjingTechnology = 'http://202.119.85.163/open/DsDir_View.aspx?yxsh=125';
+
     #endregion
 
     #region 正则邮箱校验规则
@@ -339,6 +344,76 @@ class TeacherEmailBusiness
             }
         }
 
+        return $this->_teacherEmailService->batchSave($json);
+
+    }
+
+    /**
+     * 南京理工大学研究生院
+     *
+     * @author      刘富胜 2018-10-15
+     * @return int 返回类型
+     */
+    public function getTeacherMail_nanjing_technology(){
+        ini_set('user_agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; GreenBrowser)');
+
+        #region 获取南京理工大学研究生院
+        $html = new simple_html_dom();
+        $host = 'http://202.119.85.163/open/';
+        $html->load_file($this->NanjingTechnology);
+        $pub = new public_utf();
+        #endregion
+        $school_name = '南京理工大学研究生院';
+        $json = [];
+        $source = [];
+        foreach ($html->find('.Grid_Line a') as $v){
+            if (strpos($v->href,'www')===false&&strpos($v->href,'http')===false){
+                $source[] = $host.$pub->myTrim($v->href);
+            }
+        }
+
+        for ($i=0;$i<count($source);$i++){
+            try{
+                \Yii::info($i ,'test');
+                $html->clear();
+                $html->load_file($source[$i]);
+                $tds = [];
+                $tbLine = $html->find('.tb_line');
+                if (!empty($tbLine)){
+                    foreach ($tbLine as $td){
+                        $tds[] = $pub->getRegtext($td->plaintext);
+                    }
+                    $teacher_name = $tds[1];
+                    $type = $tds[17];
+                    $email = $tds[27];
+                    if (!empty($email)){
+                        $json[] = [
+                            'teacher_name' => $teacher_name,
+                            'source' => $source[$i],
+                            'email' => $email,
+                            'create_time' => date('Y-m-d h:i:s', time()),
+                            'create_by' => 'ALpython',
+                            'type' => $type,
+                            'school_name' => $school_name,
+                        ];
+                    }
+                }
+            }catch (\Exception $e){
+                $json[] = [
+                    'teacher_name' => '',
+                    'source' => '',
+                    'email' => '',
+                    'create_time' => date('Y-m-d h:i:s', time()),
+                    'create_by' => 'ALpython',
+                    'type' => '',
+                    'school_name' => $school_name,
+                ];
+                continue;
+            }
+
+        }
+
+//        return $source;
         return $this->_teacherEmailService->batchSave($json);
 
     }
