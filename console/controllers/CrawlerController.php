@@ -130,4 +130,22 @@ class CrawlerController extends ControllerBase
         }
     }
 
+    /**
+     * 中国科学院沈阳自动化研究院
+     *
+     * @author      刘富胜 2018-10-15
+     * @return string 返回类型
+     */
+    public function actionTeacherMail_sia()
+    {
+        try{
+            ignore_user_abort(true);
+            set_time_limit(0);//忽略页面执行超时
+            print_r($this->_teacherEmailBusiness->getTeacherMail_sia());
+        }catch (\Exception $e){
+            \Yii::info($e->getTraceAsString(), 'crawler');
+            var_dump($e->getMessage());
+        }
+    }
+
 }

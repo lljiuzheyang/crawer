@@ -36,6 +36,9 @@ class TeacherEmailBusiness
     //机械工程学院:yxsh=101等具体看http://gs.njust.edu.cn/dsjs/list.htm
     private $NanjingTechnology = 'http://202.119.85.163/open/DsDir_View.aspx?yxsh=125';
 
+    //中国科学院沈阳自动化研究院
+    private $Sia ='http://www.sia.cn/yjsjy/dsjj/bsds/jxzzjqzdh/';
+
     #endregion
 
     #region 正则邮箱校验规则
@@ -354,7 +357,8 @@ class TeacherEmailBusiness
      * @author      刘富胜 2018-10-15
      * @return int 返回类型
      */
-    public function getTeacherMail_nanjing_technology(){
+    public function getTeacherMail_nanjing_technology()
+    {
         ini_set('user_agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; GreenBrowser)');
 
         #region 获取南京理工大学研究生院
@@ -366,27 +370,27 @@ class TeacherEmailBusiness
         $school_name = '南京理工大学研究生院';
         $json = [];
         $source = [];
-        foreach ($html->find('.Grid_Line a') as $v){
-            if (strpos($v->href,'www')===false&&strpos($v->href,'http')===false){
-                $source[] = $host.$pub->myTrim($v->href);
+        foreach ($html->find('.Grid_Line a') as $v) {
+            if (strpos($v->href, 'www') === false && strpos($v->href, 'http') === false) {
+                $source[] = $host . $pub->myTrim($v->href);
             }
         }
 
-        for ($i=0;$i<count($source);$i++){
-            try{
-                \Yii::info($i ,'test');
+        for ($i = 0; $i < count($source); $i++) {
+            try {
+                \Yii::info($i, 'test');
                 $html->clear();
                 $html->load_file($source[$i]);
                 $tds = [];
                 $tbLine = $html->find('.tb_line');
-                if (!empty($tbLine)){
-                    foreach ($tbLine as $td){
+                if (!empty($tbLine)) {
+                    foreach ($tbLine as $td) {
                         $tds[] = $pub->getRegtext($td->plaintext);
                     }
                     $teacher_name = $tds[1];
                     $type = $tds[17];
                     $email = $tds[27];
-                    if (!empty($email)){
+                    if (!empty($email)) {
                         $json[] = [
                             'teacher_name' => $teacher_name,
                             'source' => $source[$i],
@@ -398,7 +402,7 @@ class TeacherEmailBusiness
                         ];
                     }
                 }
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 $json[] = [
                     'teacher_name' => '',
                     'source' => '',
@@ -415,6 +419,60 @@ class TeacherEmailBusiness
 
 //        return $source;
         return $this->_teacherEmailService->batchSave($json);
+
+    }
+
+    /**
+     * 中国科学院沈阳自动化研究院
+     *
+     * @author      刘富胜 2018-10-15
+     * @return int 返回类型
+     */
+    public function getTeacherMail_sia()
+    {
+        ini_set('user_agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; GreenBrowser)');
+
+        #region 获取南京理工大学研究生院
+        $html = new simple_html_dom();
+        $html->load_file($this->Sia);
+        $pub = new public_utf();
+        #endregion
+
+        $school_name = '中国科学院沈阳自动化研究院';
+        $json = [];
+        $source = [];
+        $teacher_name = [];
+        foreach ($html->find('.nrhei a') as $v){
+            $source[] = $v->href;
+            $teacher_name[] = $pub->getRegtext($v->plaintext);
+        }
+
+        for ($i=0;$i<count($source);$i++){
+            $html->clear();
+            $html->load_file($source[$i]);
+            $td = [];
+            foreach ($html->find('#zoom table td[width=450]') as $e){
+                $td[] = $pub->getRegtext($e->plaintext);
+            }
+            if (!empty($td)){
+                $email = $td[7];
+                if (!empty($email)){
+                    $json[] = [
+                        'teacher_name' => $teacher_name[$i],
+                        'source' => $source[$i],
+                        'email' => $email,
+                        'create_time' => date('Y-m-d h:i:s', time()),
+                        'create_by' => 'ALpython',
+                        'type' => '教授',
+                        'school_name' => $school_name,
+                    ];
+                }
+            }
+
+        }
+//        return $json;
+        return $this->_teacherEmailService->batchSave($json);
+
 
     }
 
