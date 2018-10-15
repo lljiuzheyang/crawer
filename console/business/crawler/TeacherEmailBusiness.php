@@ -28,6 +28,9 @@ class TeacherEmailBusiness
 
     //华南理工大学
     private $Yanzhaoscut = 'https://yanzhao.scut.edu.cn/open/TutorList.aspx';
+
+    //扬州大学化学化工学院
+    private $Hxhgyzu = 'http://hxhg.yzu.edu.cn/module/web/jpage/dataproxy.jsp?startrecord=1&endrecord=89&perpage=40';
     #endregion
 
     #region 正则邮箱校验规则
@@ -249,7 +252,7 @@ class TeacherEmailBusiness
         $html->load($content);
 
         $source = [];
-        foreach ($html->find('#dgData a[target=_blank]') as $v){
+        foreach ($html->find('#dgData a[target=_blank]') as $v) {
             $source[] = $v->href;
         }
         $page1_save = $this->saveAllYanzhaoscut($source);
@@ -257,8 +260,87 @@ class TeacherEmailBusiness
         $VIEWSTATE = $html->find('#__VIEWSTATE')[0]->value;
         $VIEWSTATEGENERATOR = $html->find('#__VIEWSTATEGENERATOR')[0]->value;
         $VIEWSTATEENCRYPTED = $html->find('#__VIEWSTATEENCRYPTED')[0]->value;
-        $save_count = $this->recursionYanzhaoscut($EVENTVALIDATION,$VIEWSTATE,$VIEWSTATEENCRYPTED,$VIEWSTATEGENERATOR);
-        return $page1_save+$save_count;
+        $save_count = $this->recursionYanzhaoscut($EVENTVALIDATION, $VIEWSTATE, $VIEWSTATEENCRYPTED, $VIEWSTATEGENERATOR);
+        return $page1_save + $save_count;
+    }
+
+    /**
+     * 扬州大学建筑化学化工学院
+     *
+     * @author      刘富胜 2018-10-15
+     * @return int 返回类型
+     */
+    public function getTeacherMail_hxhgyzu()
+    {
+        // 72条数据
+        ini_set('user_agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; GreenBrowser)');
+        $data = [
+            'col' => 1,
+            'appid' => 1,
+            'webid' => 58,
+            'path' => '/',
+            'columnid' => 2510,
+            'sourceContentType' => 1,
+            'unitid' => 63169,
+            'webname' => '化学化工学院',
+            'permissiontype' => 0
+        ];
+        $origin = 'http://hxhg.yzu.edu.cn';
+        $referer = 'http://hxhg.yzu.edu.cn/col/col2510/index.html?uid=63169&pageNum=5';
+        $cookie = public_utf::get_cookie($this->Hxhgyzu, $data, $referer);
+        $header = [
+            'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
+            'origin:' . $origin,
+            'referer:' . $referer
+        ];
+        $content = public_utf::post($this->Hxhgyzu, http_build_query($data), $cookie, $header);
+        $pub = new public_utf();
+        $html = new simple_html_dom();
+        $html->load(str_replace(['<![CDATA[', ']'], '', $content));
+        $href = [];
+        $teacher_name = [];
+        $type = [];
+        $json = [];
+        foreach ($html->find('a') as $v) {
+            $href[] = $origin . $v->href;
+            $teacher_name[] = $pub->getRegtext(str_replace(['简介', '教授', '副', '讲师', '博士', '校聘', '校特聘'], '', $v->title));
+            if (strpos($v->title, '教授')) {
+                $type[] = '教授';
+            } else {
+                $type[] = '教师';
+            }
+        }
+
+        for ($i = 0; $i < count($href); $i++) {
+            $html->clear();
+            $html->load_file($href[$i]);
+            #region 获取邮箱
+            $email = [];
+            foreach ($html->find('.article') as $item) {
+                $str = $pub->getRegtext($item->plaintext);
+                if (preg_match($this->PREG, $str, $matches)) {
+                    $email[] = $matches[0];
+                }
+            }
+            #endregion
+
+            if (!empty($email) && count($email) > 0) {
+                foreach ($email as $em) {
+                    $json[] = [
+                        'teacher_name' => $teacher_name[$i],
+                        'source' => $href[$i],
+                        'email' => $em,
+                        'create_time' => date('Y-m-d h:i:s', time()),
+                        'create_by' => 'ALpython',
+                        'type' => $type[$i],
+                        'school_name' => '扬州大学建筑化学化工学院',
+                    ];
+                }
+            }
+        }
+
+        return $this->_teacherEmailService->batchSave($json);
+
     }
 
     /**
@@ -273,36 +355,37 @@ class TeacherEmailBusiness
      * @param int $save_count
      * @return int 返回类型
      */
-    private function recursionYanzhaoscut($EVENTVALIDATION,$VIEWSTATE,$VIEWSTATEENCRYPTED,$VIEWSTATEGENERATOR,$n=2,$save_count=0,$page_count=1){
-        if ($page_count<21){
-            if ($n < 12){
-                $page = 'lnkPage'.$n;
-                if ($n == 11){
+    private function recursionYanzhaoscut($EVENTVALIDATION, $VIEWSTATE, $VIEWSTATEENCRYPTED, $VIEWSTATEGENERATOR, $n = 2, $save_count = 0, $page_count = 1)
+    {
+        if ($page_count < 21) {
+            if ($n < 12) {
+                $page = 'lnkPage' . $n;
+                if ($n == 11) {
                     $n = 1;
                     $page = 'lnkNextPages';
                     $page_count++;
                 }
                 $data = [
-                    '__EVENTVALIDATION'=>$EVENTVALIDATION,
-                    '__VIEWSTATE'=>$VIEWSTATE,
-                    'drpXslb'=>0,
-                    'drpNd$drpNd'=>2019,
-                    'ScriptManager1'=>'UpdatePanel2|dgData$ctl23$Pager1$'.$page,
-                    '__LASTFOCUS'=>'',
-                    '__EVENTARGUMENT'=>'',
-                    '__VIEWSTATEENCRYPTED'=>$VIEWSTATEENCRYPTED,
-                    '__VIEWSTATEGENERATOR'=>$VIEWSTATEGENERATOR,
-                    '__EVENTTARGET'=>'dgData$ctl23$Pager1$'.$page,
-                    '__ASYNCPOST'=>true
+                    '__EVENTVALIDATION' => $EVENTVALIDATION,
+                    '__VIEWSTATE' => $VIEWSTATE,
+                    'drpXslb' => 0,
+                    'drpNd$drpNd' => 2019,
+                    'ScriptManager1' => 'UpdatePanel2|dgData$ctl23$Pager1$' . $page,
+                    '__LASTFOCUS' => '',
+                    '__EVENTARGUMENT' => '',
+                    '__VIEWSTATEENCRYPTED' => $VIEWSTATEENCRYPTED,
+                    '__VIEWSTATEGENERATOR' => $VIEWSTATEGENERATOR,
+                    '__EVENTTARGET' => 'dgData$ctl23$Pager1$' . $page,
+                    '__ASYNCPOST' => true
                 ];
-                $cookie = public_utf::get_cookie($this->Yanzhaoscut,$data,$this->Yanzhaoscut);
+                $cookie = public_utf::get_cookie($this->Yanzhaoscut, $data, $this->Yanzhaoscut);
                 $header = [
                     'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
                     'cookie: ASP.NET_SessionId=qbfuq2pmezhz02cgt3lhheb0; ZS_ZY=ZS_ZY=; DropDownListNd=DropDownListNd=2019; ZS_ND=ZS_ND=2019; ZS_XSLB=ZS_XSLB=0; ZS_XSBH=ZS_XSBH=',
                     'origin: https://yanzhao.scut.edu.cn',
                     'referer: https://yanzhao.scut.edu.cn/open/TutorList.aspx'
-                    ];
-                $content = public_utf::post($this->Yanzhaoscut,http_build_query($data),$cookie,$header);
+                ];
+                $content = public_utf::post($this->Yanzhaoscut, http_build_query($data), $cookie, $header);
 
                 $html = new simple_html_dom();
                 $html->clear();
@@ -313,12 +396,12 @@ class TeacherEmailBusiness
                 $VIEWSTATEENCRYPTED = $html->find('#__VIEWSTATEENCRYPTED')[0]->value;
                 \Yii::info($content, 'test');
                 $source = [];
-                foreach ($html->find('#dgData a[target=_blank]') as $v){
+                foreach ($html->find('#dgData a[target=_blank]') as $v) {
                     $source[] = $v->href;
                 }
-                $save_count = $save_count +$this->saveAllYanzhaoscut($source);
+                $save_count = $save_count + $this->saveAllYanzhaoscut($source);
 
-                $this->recursionYanzhaoscut($EVENTVALIDATION,$VIEWSTATE,$VIEWSTATEENCRYPTED,$VIEWSTATEGENERATOR,$n+1,$save_count,$page_count);
+                $this->recursionYanzhaoscut($EVENTVALIDATION, $VIEWSTATE, $VIEWSTATEENCRYPTED, $VIEWSTATEGENERATOR, $n + 1, $save_count, $page_count);
             }
         }
 
@@ -332,17 +415,18 @@ class TeacherEmailBusiness
      * @param array $source
      * @return int 返回类型
      */
-    public function saveAllYanzhaoscut($source){
+    public function saveAllYanzhaoscut($source)
+    {
         $html = new simple_html_dom();
         $pub = new public_utf();
         $json = [];
         $root_url = 'https://yanzhao.scut.edu.cn/open/';
-        for ($i=0;$i<count($source);$i++){
+        for ($i = 0; $i < count($source); $i++) {
             $html->clear();
             $arr = [];
-            try{
-                $html->load_file($root_url.$source[$i]);
-                foreach ($html->find('.tb_line') as $td){
+            try {
+                $html->load_file($root_url . $source[$i]);
+                foreach ($html->find('.tb_line') as $td) {
                     $arr[] = $pub->getRegtext($td->plaintext);
                 }
                 $teacher_name = $arr[1];
@@ -351,7 +435,7 @@ class TeacherEmailBusiness
                 if (!empty($email)) {
                     $json[] = [
                         'teacher_name' => $teacher_name,
-                        'source' => $root_url.$source[$i],
+                        'source' => $root_url . $source[$i],
                         'email' => $email,
                         'create_time' => date('Y-m-d h:i:s', time()),
                         'create_by' => 'ALpython',
@@ -359,7 +443,7 @@ class TeacherEmailBusiness
                         'school_name' => '华南理工大学',
                     ];
                 }
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 continue;
             }
 
@@ -367,6 +451,5 @@ class TeacherEmailBusiness
         $count = $this->_teacherEmailService->batchSave($json);
         return $count;
     }
-
 
 }
