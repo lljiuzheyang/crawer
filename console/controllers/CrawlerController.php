@@ -16,9 +16,9 @@ class CrawlerController extends ControllerBase
 
     private $_teacherEmailBusiness;
 
-    public function __construct($id, $module, TeacherEmailBusiness $teacherEmailBusiness,$config = array())
+    public function __construct($id, $module, TeacherEmailBusiness $teacherEmailBusiness, $config = array())
     {
-       $this->_teacherEmailBusiness = $teacherEmailBusiness;
+        $this->_teacherEmailBusiness = $teacherEmailBusiness;
         parent::__construct($id, $module, $config);
     }
 
@@ -30,11 +30,11 @@ class CrawlerController extends ControllerBase
      */
     public function actionTeacherMail_tjpu()
     {
-        try{
+        try {
             ignore_user_abort(true);
             set_time_limit(0);//忽略页面执行超时
             print_r($this->_teacherEmailBusiness->getTeacherMail_tjpu());
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             \Yii::info($e->getTraceAsString(), 'crawler');
             var_dump($e->getMessage());
         }
@@ -48,11 +48,11 @@ class CrawlerController extends ControllerBase
      */
     public function actionTeacherMail_daoshieol()
     {
-        try{
+        try {
             ignore_user_abort(true);
             set_time_limit(0);//忽略页面执行超时
             print_r($this->_teacherEmailBusiness->getTeacherMail_daoshieol());
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             \Yii::info($e->getTraceAsString(), 'crawler');
             var_dump($e->getMessage());
         }
@@ -66,11 +66,11 @@ class CrawlerController extends ControllerBase
      */
     public function actionTeacherMail_jgxyyzu()
     {
-        try{
+        try {
             ignore_user_abort(true);
             set_time_limit(0);//忽略页面执行超时
             print_r($this->_teacherEmailBusiness->getTeacherMail_jgxyyzu());
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             \Yii::info($e->getTraceAsString(), 'crawler');
             var_dump($e->getMessage());
         }
@@ -84,11 +84,11 @@ class CrawlerController extends ControllerBase
      */
     public function actionTeacherMail_yanzhaoscut()
     {
-        try{
+        try {
             ignore_user_abort(true);
             set_time_limit(0);//忽略页面执行超时
             print_r($this->_teacherEmailBusiness->getTeacherMail_yanzhaoscut());
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             \Yii::info($e->getTraceAsString(), 'crawler');
             var_dump($e->getMessage());
         }
@@ -102,11 +102,11 @@ class CrawlerController extends ControllerBase
      */
     public function actionTeacherMail_hxhgyzu()
     {
-        try{
+        try {
             ignore_user_abort(true);
             set_time_limit(0);//忽略页面执行超时
             print_r($this->_teacherEmailBusiness->getTeacherMail_hxhgyzu());
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             \Yii::info($e->getTraceAsString(), 'crawler');
             var_dump($e->getMessage());
         }
@@ -120,11 +120,11 @@ class CrawlerController extends ControllerBase
      */
     public function actionTeacherMail_nanjing_technology()
     {
-        try{
+        try {
             ignore_user_abort(true);
             set_time_limit(0);//忽略页面执行超时
             print_r($this->_teacherEmailBusiness->getTeacherMail_nanjing_technology());
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             \Yii::info($e->getTraceAsString(), 'crawler');
             var_dump($e->getMessage());
         }
@@ -138,11 +138,29 @@ class CrawlerController extends ControllerBase
      */
     public function actionTeacherMail_sia()
     {
-        try{
+        try {
             ignore_user_abort(true);
             set_time_limit(0);//忽略页面执行超时
             print_r($this->_teacherEmailBusiness->getTeacherMail_sia());
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
+            \Yii::info($e->getTraceAsString(), 'crawler');
+            var_dump($e->getMessage());
+        }
+    }
+
+    /**
+     * 南方科技大学
+     *
+     * @author      刘富胜 2018-10-16
+     * @return string 返回类型
+     */
+    public function actionTeacherMail_sustc()
+    {
+        try {
+            ignore_user_abort(true);
+            set_time_limit(0);//忽略页面执行超时
+            print_r($this->_teacherEmailBusiness->getTeacherMail_sustc());
+        } catch (\Exception $e) {
             \Yii::info($e->getTraceAsString(), 'crawler');
             var_dump($e->getMessage());
         }

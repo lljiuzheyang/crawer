@@ -37,7 +37,10 @@ class TeacherEmailBusiness
     private $NanjingTechnology = 'http://202.119.85.163/open/DsDir_View.aspx?yxsh=125';
 
     //中国科学院沈阳自动化研究院
-    private $Sia ='http://www.sia.cn/yjsjy/dsjj/bsds/jxzzjqzdh/';
+    private $Sia = 'http://www.sia.cn/yjsjy/dsjj/bsds/jxzzjqzdh/';
+
+    //南方科技大学
+    private $Sustc = 'http://www.sustc.edu.cn/campus_shuli_2';
 
     #endregion
 
@@ -442,21 +445,21 @@ class TeacherEmailBusiness
         $json = [];
         $source = [];
         $teacher_name = [];
-        foreach ($html->find('.nrhei a') as $v){
+        foreach ($html->find('.nrhei a') as $v) {
             $source[] = $v->href;
             $teacher_name[] = $pub->getRegtext($v->plaintext);
         }
 
-        for ($i=0;$i<count($source);$i++){
+        for ($i = 0; $i < count($source); $i++) {
             $html->clear();
             $html->load_file($source[$i]);
             $td = [];
-            foreach ($html->find('#zoom table td[width=450]') as $e){
+            foreach ($html->find('#zoom table td[width=450]') as $e) {
                 $td[] = $pub->getRegtext($e->plaintext);
             }
-            if (!empty($td)){
+            if (!empty($td)) {
                 $email = $td[7];
-                if (!empty($email)){
+                if (!empty($email)) {
                     $json[] = [
                         'teacher_name' => $teacher_name[$i],
                         'source' => $source[$i],
@@ -473,7 +476,64 @@ class TeacherEmailBusiness
 //        return $json;
         return $this->_teacherEmailService->batchSave($json);
 
+    }
 
+    /**
+     * 南方科技大学
+     *
+     * @author      刘富胜 2018-10-15
+     * @return int 返回类型
+     */
+    public function getTeacherMail_sustc()
+    {
+        ini_set('user_agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; GreenBrowser)');
+
+        #region 获取南京理工大学研究生院
+        $html = new simple_html_dom();
+        $html->load_file($this->Sustc);
+        $pub = new public_utf();
+        #endregion
+
+        $school_name = '南方科技大学';
+        $json = [];
+        $email = [];
+        $teacher_name = [];
+        $type = [];
+        foreach ($html->find('.block15 .name') as $v) {
+            $teacher_name[] = $pub->getRegtext($v->plaintext);
+        }
+
+        foreach ($html->find('.block15 .oth') as $e) {
+            if (preg_match($this->PREG, $e->plaintext, $matches)) {
+                $email[] = $matches[0];
+            }else{
+                $email[] = '';
+            }
+        }
+
+        foreach ($html->find('.block15 .typ') as $t){
+            if (strpos($pub->getRegtext($t->plaintext), '教授')) {
+                $type[] = '教授';
+            } else {
+                $type[] = '教师';
+            }
+        }
+
+        for ($i = 0; $i < count($teacher_name); $i++) {
+            if (!empty($email[$i])) {
+                $json[] = [
+                    'teacher_name' => $teacher_name[$i],
+                    'source' => $this->Sustc,
+                    'email' => $email[$i],
+                    'create_time' => date('Y-m-d h:i:s', time()),
+                    'create_by' => 'ALpython',
+                    'type' => $type[$i],
+                    'school_name' => $school_name,
+                ];
+            }
+        }
+        return $this->_teacherEmailService->batchSave($json);
+//        return $json;
     }
 
     /**
