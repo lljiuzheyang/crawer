@@ -42,6 +42,8 @@ class TeacherEmailBusiness
     //南方科技大学
     private $Sustc = 'http://www.sustc.edu.cn/campus_shuli_2';
 
+    //中国科学院自动化研究所
+    private $Ia = 'http://www.ia.cas.cn/yjsjy/dsjj/';
     #endregion
 
     #region 正则邮箱校验规则
@@ -481,14 +483,14 @@ class TeacherEmailBusiness
     /**
      * 南方科技大学
      *
-     * @author      刘富胜 2018-10-15
+     * @author      刘富胜 2018-10-16
      * @return int 返回类型
      */
     public function getTeacherMail_sustc()
     {
         ini_set('user_agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; GreenBrowser)');
 
-        #region 获取南京理工大学研究生院
+        #region 获取南方科技大学
         $html = new simple_html_dom();
         $html->load_file($this->Sustc);
         $pub = new public_utf();
@@ -506,12 +508,12 @@ class TeacherEmailBusiness
         foreach ($html->find('.block15 .oth') as $e) {
             if (preg_match($this->PREG, $e->plaintext, $matches)) {
                 $email[] = $matches[0];
-            }else{
+            } else {
                 $email[] = '';
             }
         }
 
-        foreach ($html->find('.block15 .typ') as $t){
+        foreach ($html->find('.block15 .typ') as $t) {
             if (strpos($pub->getRegtext($t->plaintext), '教授')) {
                 $type[] = '教授';
             } else {
@@ -534,6 +536,61 @@ class TeacherEmailBusiness
         }
         return $this->_teacherEmailService->batchSave($json);
 //        return $json;
+    }
+
+    /**
+     * 中国科学院自动化研究所
+     *
+     * @author      刘富胜 2018-10-16
+     * @return int 返回类型
+     */
+    public function getTeacherMail_ia()
+    {
+        ini_set('user_agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; GreenBrowser)');
+
+        #region 中国科学院自动化研究所
+        $html = new simple_html_dom();
+        $html->load_file($this->Ia);
+        $pub = new public_utf();
+        #endregion
+
+        $school_name = '中国科学院自动化研究所';
+        $teacher_name = [];//教师名称
+        $source = [];
+        $json = [];
+
+        foreach ($html->find('#article a') as $v) {
+            if (strpos($v->href, 'people.ucas.ac.cn')) {
+                $source[] = $v->href;
+                $teacher_name[] = $pub->getRegtext($v->plaintext);
+            }
+        }
+
+        for ($i = 0; $i < count($source); $i++) {
+            $html->clear();
+            $html->load_file($source[$i]);
+            foreach ($html->find('.bp-enty') as $e) {
+                if (preg_match($this->PREG, $e->plaintext, $matches)) {
+                    $email = $matches[0];
+                } else {
+                    $email = '';
+                }
+            }
+            if (!empty($email)) {
+                $json[] = [
+                    'teacher_name' => $teacher_name[$i],
+                    'source' => $source[$i],
+                    'email' => $email,
+                    'create_time' => date('Y-m-d h:i:s', time()),
+                    'create_by' => 'ALpython',
+                    'type' => '教授',
+                    'school_name' => $school_name,
+                ];
+            }
+
+        }
+        return $this->_teacherEmailService->batchSave($json);
+
     }
 
     /**
