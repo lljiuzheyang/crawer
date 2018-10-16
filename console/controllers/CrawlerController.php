@@ -222,4 +222,24 @@ class CrawlerController extends ControllerBase
         }
     }
 
+    /**
+     * 中国财经政法大学 外国语学院
+     *
+     * @author      刘富胜 2018-10-16
+     * @return boolean 返回类型
+     */
+    public function actionTeacherMail_zuel()
+    {
+        try {
+            ignore_user_abort(true);
+            set_time_limit(0);//忽略页面执行超时
+            print_r($this->_teacherEmailBusiness->getTeacherMail_zuel());
+            return true;
+        } catch (\Exception $e) {
+            \Yii::info($e->getTraceAsString(), 'crawler');
+            var_dump($e->getMessage());
+            return false;
+        }
+    }
+
 }

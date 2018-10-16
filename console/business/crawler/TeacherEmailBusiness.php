@@ -47,6 +47,10 @@ class TeacherEmailBusiness
 
     //中国科学院物理研究所
     private $Iphy = 'http://edu.iphy.ac.cn/3dsjs.php';
+
+    //中国财经政法大学 外国语学院
+    private $Zuel = 'http://wgyxy.zuel.edu.cn/849/list.htm';
+
     #endregion
 
     #region 正则邮箱校验规则
@@ -619,18 +623,73 @@ class TeacherEmailBusiness
         $source = [];
         $json = [];
 
-        foreach ($html->find('.mainL .supervisor_list a') as $v){
-            $source[] = $host.$v->href;
-            $teacher_name[] = $pub->getRegtext(str_replace('*','',$v->plaintext));
+        foreach ($html->find('.mainL .supervisor_list a') as $v) {
+            $source[] = $host . $v->href;
+            $teacher_name[] = $pub->getRegtext(str_replace('*', '', $v->plaintext));
+        }
+
+        for ($i = 0; $i < count($source); $i++) {
+            $html->clear();
+            $html->load_file($source[$i]);
+            foreach ($html->find('.mainL a') as $e) {
+                if (preg_match($this->PREG, $e->plaintext, $matches)) {
+                    $email = $matches[0];
+                }
+            }
+            if (!empty($email)) {
+                $json[] = [
+                    'teacher_name' => $teacher_name[$i],
+                    'source' => $source[$i],
+                    'email' => $email,
+                    'create_time' => date('Y-m-d h:i:s', time()),
+                    'create_by' => 'ALpython',
+                    'type' => $type,
+                    'school_name' => $school_name,
+                ];
+            }
+        }
+        return $this->_teacherEmailService->batchSave($json);
+    }
+
+    /**
+     * 中国财经政法大学 外国语学院
+     *
+     * @author      刘富胜 2018-10-16
+     * @return int 返回类型
+     */
+    public function getTeacherMail_zuel()
+    {
+        ini_set('user_agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; GreenBrowser)');
+
+        #region 中国财经政法大学 外国语学院
+        $html = new simple_html_dom();
+        $html->load_file($this->Zuel);
+        $pub = new public_utf();
+        #endregion
+
+        $host = 'http://wgyxy.zuel.edu.cn';
+        $school_name = '中国财经政法大学 外国语学院';
+        $type = '导师';
+        $teacher_name = [];//教师名称
+        $source = [];
+        $json = [];
+
+        foreach ($html->find('#wp_column_article a') as $v){
+            if (strpos($v->href, 'faculty.zuel.edu.cn')||strpos($v->href, 'wgyxy.zuel.edu.cn')){
+                $source[] = $v->href;
+            }else{
+                $source[] = $host.$v->href;
+            }
+
+            $teacher_name[] = $pub->getRegtext($v->plaintext);
         }
 
         for ($i=0;$i<count($source);$i++){
             $html->clear();
             $html->load_file($source[$i]);
-            foreach ($html->find('.mainL a') as $e){
-                if (preg_match($this->PREG, $e->plaintext, $matches)) {
-                    $email = $matches[0];
-                }
+            $txt = $html->find('html')[0]->plaintext;
+            if (preg_match($this->PREG,$txt, $matches)) {
+                $email = $matches[0];
             }
             if (!empty($email)) {
                 $json[] = [
