@@ -41,7 +41,6 @@ class public_utf
     public static function get($url, $str_cookie = '', $is_header = 0, $is_set_header = 0, $gzip = false)
     {
         $curl = curl_init();
-        //curl_setopt($curl, CURLOPT_ENCODING, "");
         if ($is_header) {
             curl_setopt($curl, CURLOPT_HEADER, 1);
         }
@@ -75,20 +74,7 @@ class public_utf
         }
 
         $res = curl_exec($curl);
-        $info = curl_getinfo($curl);
-
-        /*
-        print "info";
-        print "<br>";
-        print_r ($info);
-        print "res";
-        print "<br>";
-        print_r ($res);
-        */
-
         curl_close($curl);
-
-
         return $res;
     }
 
