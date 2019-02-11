@@ -15,6 +15,7 @@ use Yii;
  * @property int $status 假日类别  1--为节假日，2--为工作日 0--表示普通（如果周六日则为休息日）
  * @property string $remark 假日名称
  * @property string $rest
+ * @property int $days 放假天数
  */
 class TDateHoliday extends \common\models\ARBase
 {
@@ -33,7 +34,7 @@ class TDateHoliday extends \common\models\ARBase
     {
         return [
             [['date'], 'required'],
-            [['status'], 'integer'],
+            [['status', 'days'], 'integer'],
             [['date'], 'string', 'max' => 32],
             [['name'], 'string', 'max' => 20],
             [['avoid', 'suit', 'remark', 'rest'], 'string', 'max' => 200],
@@ -54,6 +55,7 @@ class TDateHoliday extends \common\models\ARBase
             'status' => '假日类别  1--为节假日，2--为工作日 0--表示普通（如果周六日则为休息日）',
             'remark' => '注释',
             'rest' => '建议',
+            'days' => '放假天数',
         ];
     }
 }

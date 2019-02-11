@@ -34,4 +34,14 @@ class CrawlerDateController extends ControllerBase
 //        return $this->_dateBusiness->getDate();
     }
 
+    /**
+     * 获取日期数据
+     * @author 刘富胜
+     * @return int
+     */
+    public function actionGetBaiduDate()
+    {
+        print_r($this->_dateBusiness->getInfo());
+//        return $this->_dateBusiness->getDate();
+    }
 }

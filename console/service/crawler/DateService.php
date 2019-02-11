@@ -58,6 +58,7 @@ class DateService
         $holiday = $params['data'][0]['holiday'];
         if (!empty($holiday[0])){
             foreach ($holiday as &$day){
+                $days=0;
                 $arr[$day['festival']]['name'] = $day['name'];
                 $arr[$day['festival']]['date'] = $day['festival'];
                 $arr[$day['festival']]['remark'] = $day['desc'];
@@ -66,8 +67,12 @@ class DateService
                     foreach ($day['list'] as $list){
                         $arr[$list['date']]['date']= $list['date'];
                         $arr[$list['date']]['status']= $list['status'];
+                        if ($list['status'] == 1){
+                            $days++;
+                        }
                     }
                 }
+                $arr[$day['festival']]['days'] = $days;
             }
         }else{
             $arr[$holiday['festival']]['name'] = $holiday['name'];
@@ -104,5 +109,15 @@ class DateService
         return (int)$count;
     }
 
+    /**
+     * 获取所有日期和假期信息
+     *
+     * @author 刘富胜
+     * @return mixed
+     */
+    public function getInfo()
+    {
+        return $this->_TDateHolidayAR->getInfo();
+    }
 
 }

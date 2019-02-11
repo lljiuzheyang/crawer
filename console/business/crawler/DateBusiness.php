@@ -37,4 +37,33 @@ class DateBusiness
 
     }
 
+    /**
+     * 获取所有月份的信息存入log
+     * @author 刘富胜
+     * @return mixed
+     */
+    public function getInfo()
+    {
+        $res = $this->_dateService->getInfo();
+        \Yii::info(json_encode($this->dealDate($res)), 'test');
+    }
+
+    /**
+     * 处理数据转换成想要的格式
+     * @author 刘富胜
+     * @param array $res
+     * @return array
+     */
+    public function dealDate($res)
+    {
+        $arr = [];
+        foreach ($res as $v){
+            $arr[$v['date']]['name'] = $v['name'];
+            $arr[$v['date']]['date'] = date('Y-m-d',strtotime($v['date']));
+            $arr[$v['date']]['type'] = (int)$v['status'];
+            $arr[$v['date']]['days'] = (int)$v['days'];
+        }
+        return array_values($arr);
+    }
+
 }

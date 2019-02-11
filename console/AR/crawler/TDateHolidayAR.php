@@ -39,4 +39,20 @@ class TDateHolidayAR extends TDateHoliday
         return $tDateHoliday->save();
 
     }
+
+    /**
+     * 获取所有日期数据
+     * @author 刘富胜 2019-1-16
+     * @return mixed
+     */
+    public function getInfo()
+    {
+       return static::find()
+           ->asArray()
+           ->where([
+               'and',
+               ['status'=>1],
+               ['not',['name'=>null]]
+           ])->all();
+    }
 }
